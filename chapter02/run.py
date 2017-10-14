@@ -8,7 +8,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 from bandit import BanditGame
-import threading
 
 class BanditRun(object):
     def __init__(self, maxSteps=1000, runCnt=2000, epsilon=0.1, initials=0.0, averageSamp=False):

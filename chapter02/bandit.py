@@ -4,9 +4,7 @@
 """
 
 from __future__ import print_function
-import matplotlib.pyplot as plt
 import numpy as np
-import seaborn as sns
 
 class BanditGame(object):
     def __init__(self, kArm=10, epsilon=0.0, qMean=0.0, qVariance=1.0, 
