@@ -10,19 +10,21 @@ import seaborn as sns
 from bandit import BanditGame
 
 class BanditRun(object):
-    def __init__(self, maxSteps=1000, runCnt=2000, epsilon=0.1, initials=0.0, averageSamp=False):
+    def __init__(self, maxSteps=1000, runCnt=2000, epsilon=0.1, initials=0.0,
+                    averageSamp=False, ucb=False):
         self.maxSteps = maxSteps
         self.runCnt = runCnt
         self.epsilon = epsilon
         self.initials = initials
         self.averageSamp = averageSamp
+        self.ucb = ucb
         self.action = []
         self.reward = []
         self.isCorrectAction = []
 
     def run(self):
-        bandits = [BanditGame(maxSteps=self.maxSteps, epsilon=self.epsilon, initials=self.initials, \
-                                averageSamp=self.averageSamp) for _ in range(self.runCnt)]
+        bandits = [BanditGame(maxSteps=self.maxSteps, epsilon=self.epsilon, initials=self.initials,
+                                averageSamp=self.averageSamp, ucb=self.ucb) for _ in range(self.runCnt)]
         for bd in bandits:
             bd.run()
             actionList = [x[0] for x in bd.actionAndReward]
@@ -87,9 +89,25 @@ def figure2_3():
     plt.ylabel("Optimal action")
     plt.show()
 
+def figure2_4():
+    maxSteps = 1000
+    ex1 = BanditRun(maxSteps=maxSteps, ucb=True)
+    ex2 = BanditRun(maxSteps=maxSteps, epsilon=0.1)
+    ex1.run()
+    ex2.run()
+
+    plt.figure("Figure 2.4")
+    for (ex, color, name) in zip([ex1, ex2], ['r','b'], ["$UCB, c=2$", r"$\varepsilon-greedy, epsilon=0.1$"]):
+        plt.plot(np.arange(maxSteps), ex.getAverageReward(), color, label=name)
+    plt.legend()
+    plt.xlabel("Steps")
+    plt.ylabel("Average reward")
+    plt.show()
+
 if __name__ == '__main__':
     np.random.seed(47)
-    figure2_1()
-    figure2_2()
-    figure2_3()
+    # figure2_1()
+    # figure2_2()
+    # figure2_3()
+    figure2_4()
 

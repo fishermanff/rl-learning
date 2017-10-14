@@ -7,8 +7,8 @@ from __future__ import print_function
 import numpy as np
 
 class BanditGame(object):
-    def __init__(self, kArm=10, epsilon=0.0, qMean=0.0, qVariance=1.0, 
-                    rewardVariance=1.0, initials=0.0, alpha=0.1, averageSamp=False, maxSteps=1000):
+    def __init__(self, kArm=10, epsilon=0.0, qMean=0.0, qVariance=1.0, rewardVariance=1.0,
+                        initials=0.0, alpha=0.1, averageSamp=False, ucb=False, maxSteps=1000):
         self.kArm = kArm
         self.epsilon = epsilon
         self.qMean = qMean
@@ -17,27 +17,30 @@ class BanditGame(object):
         self.initials = initials
         self.alpha = alpha
         self.averageSamp = averageSamp
+        self.ucb = ucb
         self.maxSteps = maxSteps
 
         self.actions = np.arange(self.kArm)
         self.qActual = np.random.normal(0.0, 1.0, self.kArm)
-        self.qEst = [self.initials] * self.kArm
+        self.qEst = np.array([self.initials] * self.kArm)
         self.actionAndReward = []
 
-        self.cumulativeAction = {}
-        self.cumulativeReward = {}
+        self.cumulativeAction = np.zeros(self.kArm)
+        self.cumulativeReward = np.zeros(self.kArm)
         self.bestAction = np.argmax(self.qActual)
-
-        for action in self.actions:
-            self.cumulativeAction[action] = 0
-            self.cumulativeReward[action] = 0
+        self.times = 0
+        self.confidence = 2
 
     def getAction(self):
+        if(self.ucb):
+            return np.argmax(self.qEst + 
+                        np.array([self.confidence * np.sqrt(np.log(self.times+1)/(Nt+1)) for Nt in self.cumulativeAction]))
         if(np.random.rand()<self.epsilon):
             return self.actions[np.random.randint(self.kArm)]
         return np.argmax(self.qEst)
 
     def doAction(self, action):
+        self.times += 1
         reward = np.random.normal(self.qActual[action], self.rewardSigma)
         self.actionAndReward.append((action, reward))
         self.cumulativeAction[action] += 1
