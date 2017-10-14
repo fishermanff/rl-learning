@@ -1,2 +1,2 @@
 # rl-learning
-Some codes of 《Reinforcement Learning: An Introduction》
+Some implements of the book: Reinforcement Learning: An Introduction
