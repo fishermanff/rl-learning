@@ -10,12 +10,14 @@ import seaborn as sns
 from bandit import BanditGame
 
 class BanditRun(object):
-    def __init__(self, maxSteps=1000, runCnt=2000, epsilon=0.1, initials=0.0,
-                    averageSamp=False, ucb=False):
+    def __init__(self, maxSteps=1000, runCnt=2000, epsilon=0.1, qMean=0.0, initials=0.0,
+                    alpha=0.1, averageSamp=False, ucb=False, gradient=False, gradientBaseline=True):
         self.maxSteps = maxSteps
         self.runCnt = runCnt
         self.epsilon = epsilon
+        self.qMean = qMean
         self.initials = initials
+        self.alpha = alpha
         self.averageSamp = averageSamp
         self.ucb = ucb
         self.action = []
@@ -23,8 +25,9 @@ class BanditRun(object):
         self.isCorrectAction = []
 
     def run(self):
-        bandits = [BanditGame(maxSteps=self.maxSteps, epsilon=self.epsilon, initials=self.initials,
-                                averageSamp=self.averageSamp, ucb=self.ucb) for _ in range(self.runCnt)]
+        bandits = [BanditGame(maxSteps=self.maxSteps, epsilon=self.epsilon, qMean=self.qMean, initials=self.initials,
+                                alhpa=self.alpha, averageSamp=self.averageSamp, ucb=self.ucb, gradient=self.gradient, 
+                                gradientBaseline=self.gradientBaseline) for _ in range(self.runCnt)]
         for bd in bandits:
             bd.run()
             actionList = [x[0] for x in bd.actionAndReward]
@@ -67,7 +70,7 @@ def figure2_2():
     plt.ylabel("Average reward")
 
     plt.subplot(212)
-    for (idx,color,name) in (zip(range(len(correctPercent)), ['r','g','b'], ["epsilon=0.0", "epsilon=0.01", "epsilon=0.1"])):
+    for (idx,color,name) in zip(range(len(correctPercent)), ['r','g','b'], ["epsilon=0.0", "epsilon=0.01", "epsilon=0.1"]):
         plt.plot(np.arange(maxSteps), correctPercent[idx], color, label=name)
     plt.legend()
     plt.xlabel("Steps")
@@ -104,6 +107,8 @@ def figure2_4():
     plt.ylabel("Average reward")
     plt.show()
 
+    def figure2_5():
+        ex1 = BanditRun(aplha=0.1, gradient=True, gradientBaseline=True, qMean=4.0)
 if __name__ == '__main__':
     np.random.seed(47)
     # figure2_1()
