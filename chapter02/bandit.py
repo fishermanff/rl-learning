@@ -8,7 +8,7 @@ import numpy as np
 
 class BanditGame(object):
     def __init__(self, kArm=10, epsilon=0.0, qMean=0.0, initials=0.0, alpha=0.1, averageSamp=False, ucb=False, 
-                            gradient=False, gradientBaseline=False, maxSteps=1000):
+                            ucbC=2, gradient=False, gradientBaseline=False, maxSteps=1000):
         self.kArm = kArm
         self.epsilon = epsilon
         self.qMean = 0.0
@@ -18,6 +18,7 @@ class BanditGame(object):
         self.alpha = alpha
         self.averageSamp = averageSamp
         self.ucb = ucb
+        self.ucbC = ucbC
         self.gradient = gradient
         self.gradientBaseline = gradientBaseline
         self.maxSteps = maxSteps
@@ -31,22 +32,22 @@ class BanditGame(object):
         self.cumulativeReward = np.zeros(self.kArm)
         self.bestAction = np.argmax(self.qActual)
         self.times = 0
-        self.confidence = 2
-        self.preference = np.zeros(self.kArm)
-        self.probability = np.zeros(self.kArm)
+        self.actionProb = np.zeros(self.kArm)
+        self.averReward = 0.0
 
     def softmax(self, x):
-        return np.exp(x)/np.sum(np.exp(x))
+        expVal = np.exp(x)
+        return expVal/np.sum(expVal)
 
     def getAction(self):
-        if(self.ucb):
-            return np.argmax(self.qEst + 
-                        np.array([self.confidence * np.sqrt(np.log(self.times+1)/(Nt+1)) for Nt in self.cumulativeAction]))
-        if(self.gradient):
-            self.probability = self.softmax(self.preference)
-            return np.argmax(self.probability)
         if(np.random.rand()<self.epsilon):
             return self.actions[np.random.randint(self.kArm)]
+        if(self.ucb):
+            return np.argmax(self.qEst + 
+                        np.array([self.ucbC * np.sqrt(np.log(self.times+1)/(Nt+1)) for Nt in self.cumulativeAction]))
+        if(self.gradient):
+            self.actionProb = self.softmax(self.qEst)
+            return np.random.choice(self.actions, p=self.actionProb)
         return np.argmax(self.qEst)
 
     def doAction(self, action):
@@ -56,17 +57,22 @@ class BanditGame(object):
         self.cumulativeAction[action] += 1
         self.cumulativeReward[action] += reward
         if(self.gradient):
-            mask = np.array([1 if x==action else 0 for x in self.actions])
+            self.averReward = (self.times-1.0)*self.averReward/self.times + reward/self.times
+            mask = np.zeros(self.kArm)
+            mask[action] = 1
             if(self.gradientBaseline):
-                self.preference = self.preference + \
-                                    self.alpha*(reward-1.0*self.cumulativeReward[action]/self.times)*(mask-self.probability)
+                baseline = self.averReward
             else:
-                self.preference = self.preference + self.alpha*reward*(mask-self.probability)
+                baseline = 0.0
+            self.qEst = self.qEst + self.alpha*(reward-baseline)*(mask-self.actionProb)
+            # if(self.gradientBaseline):
+            #     self.qEst = self.qEst + self.alpha*(reward-self.averReward)*(mask-self.actionProb)
+            # else:
+            #     self.qEst = self.qEst + self.alpha*reward*(mask-self.actionProb)
+        elif(self.averageSamp==True):
+            self.qEst[action] = self.qEst[action] + (reward-self.qEst[action])/self.cumulativeAction[action]
         else:
-            if(self.averageSamp==True):
-                self.qEst[action] = self.qEst[action] + (reward-self.qEst[action])/self.cumulativeAction[action]
-            else:
-                self.qEst[action] = self.qEst[action] + self.alpha*(reward-self.qEst[action])
+            self.qEst[action] = self.qEst[action] + self.alpha*(reward-self.qEst[action])
 
 
     def run(self):
