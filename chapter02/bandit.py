@@ -61,14 +61,9 @@ class BanditGame(object):
             mask = np.zeros(self.kArm)
             mask[action] = 1
             if(self.gradientBaseline):
-                baseline = self.averReward
+                self.qEst = self.qEst + self.alpha*(reward-self.averReward)*(mask-self.actionProb)
             else:
-                baseline = 0.0
-            self.qEst = self.qEst + self.alpha*(reward-baseline)*(mask-self.actionProb)
-            # if(self.gradientBaseline):
-            #     self.qEst = self.qEst + self.alpha*(reward-self.averReward)*(mask-self.actionProb)
-            # else:
-            #     self.qEst = self.qEst + self.alpha*reward*(mask-self.actionProb)
+                self.qEst = self.qEst + self.alpha*reward*(mask-self.actionProb)
         elif(self.averageSamp==True):
             self.qEst[action] = self.qEst[action] + (reward-self.qEst[action])/self.cumulativeAction[action]
         else:
