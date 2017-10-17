@@ -76,6 +76,9 @@ class GridWorld(object):
                     for action in self.actions:
                         newGrid[i,j] += self.actionProbOfState[i,j][action] * (self.rewardOfStateAction[i,j][action] + \
                                                 discount * self.grid[self.successorOfStateAction[i,j][action]])
+            if(np.sum(np.abs(self.grid - newGrid)) < 1e-4):
+                self.grid = newGrid
+                break
             self.grid = newGrid
             epoch = epoch - 1
 
