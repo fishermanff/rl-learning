@@ -119,7 +119,6 @@ class GridWorld(object):
     def isValidCell(self, cell):
         return cell[0]>=0 and cell[0]<self.gridHeight and cell[1]>=0 and cell[1]<self.gridWidth
 
-
 if __name__ == '__main__':
     gridWorld = GridWorld()
     gridWorld.calculateRandomGrid()
