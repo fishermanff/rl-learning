@@ -106,6 +106,25 @@ class GridWorld(object):
                 return self.grid, self.actionProbOfState
             k += 1
 
+    # value iteration 
+    def valueIteration(self, discount=1.0):
+        self.grid = np.zeros((self.gridHeight, self.gridWidth))
+        while True:
+            newGrid = np.zeros((self.gridHeight, self.gridWidth))
+            for i in range(self.gridHeight):
+                for j in range(self.gridWidth):
+                    for action in self.actions:
+                        temp = (self.rewardOfStateAction[i,j][action] + \
+                                                discount * self.grid[self.successorOfStateAction[i,j][action]])
+                        if(temp>newGrid[i,j]):
+                            newGrid[i,j] = temp
+            if(np.sum(np.abs(self.grid - newGrid)) < 1e-4):
+                self.grid = newGrid
+                break
+
+    def printValueGraph(self):
+        print(self.grid.round(1))
+
     def printPolicyGraph(self):
         policyOfState = []
         for i in range(self.gridHeight):
@@ -118,9 +137,6 @@ class GridWorld(object):
             policyOfState.append(policyOfOneRow)
         for row in range(self.gridHeight):
             print(policyOfState[row])
-
-    def printValueGraph(self):
-        print(self.grid.round(1))
 
 if __name__ == '__main__':
     gridWorld = GridWorld()
@@ -135,4 +151,7 @@ if __name__ == '__main__':
     gridWorld.printValueGraph()
     print("optimal policy")
     gridWorld.printPolicyGraph()
+
+    print("\nvalue iteration...")
+    gridWorld.printValueGraph()
 
