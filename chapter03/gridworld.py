@@ -7,9 +7,9 @@ import numpy as np
 
 class GridWorld(object):
     def __init__(self):
-        self.gridWidth = 5
         self.gridHeight = 5
-        self.grid = np.zeros((self.gridWidth, self.gridHeight))
+        self.gridWidth = 5
+        self.grid = np.zeros((self.gridHeight, self.gridWidth))
         self.actions = ['E', 'S', 'W', 'N']
         self.posOfA = (0, 1)
         self.posOfB = (0, 3)
@@ -70,9 +70,9 @@ class GridWorld(object):
 
     def calculateRandomGrid(self, epoch=1000, discount=0.9):
         while epoch>0:
-            newGrid = np.zeros((5,5))
-            for i in range(self.gridWidth):
-                for j in range(self.gridHeight):
+            newGrid = np.zeros((self.gridHeight, self.gridWidth))
+            for i in range(self.gridHeight):
+                for j in range(self.gridWidth):
                     for action in self.actions:
                         newGrid[i,j] += self.actionProbOfState[i,j][action] * (self.rewardOfStateAction[i,j][action] + \
                                                 discount * self.grid[self.successorOfStateAction[i,j][action]])
@@ -81,8 +81,51 @@ class GridWorld(object):
                 break
             self.grid = newGrid
             epoch = epoch - 1
+        self.grid = self.grid.round(1)
+
+    def calculateOptimalGrid(self, epoch=1000, discount=0.9):
+        while epoch>0:
+            newGrid = np.zeros((self.gridHeight, self.gridWidth))
+            for i in range(self.gridHeight):
+                for j in range(self.gridWidth):
+                    for action in self.actions:
+                        temp = (self.rewardOfStateAction[i,j][action] + \
+                                                discount * self.grid[self.successorOfStateAction[i,j][action]])
+                        if(temp>newGrid[i,j]):
+                            newGrid[i,j] = temp
+            if(np.sum(np.abs(self.grid - newGrid)) < 1e-4):
+                self.grid = newGrid
+                break
+            self.grid = newGrid
+            epoch = epoch - 1
+        self.grid = self.grid.round(1)
+
+    def printOptimalPolicy(self, optimalGrid):
+        bestPolicyOfState = []
+        for i in range(self.gridHeight):
+            policyOfOneRow = []
+            for j in range(self.gridWidth):
+                policy = ['E','S','W','N']
+                if((i,j)!=self.posOfA and (i,j)!=self.posOfB):
+                    adjacent = [(i,j+1), (i+1,j), (i,j-1), (i-1,j)]
+                    value = [optimalGrid[cell] if self.isValidCell(cell) else 0.0 for cell in adjacent]
+                    policy = [p if val==max(value) else '#' for p, val in zip(policy, value)]
+                policyOfOneRow.append(policy)
+            bestPolicyOfState.append(policyOfOneRow)
+        print("best policy: ")
+        for row in range(self.gridHeight):
+            print(bestPolicyOfState[row])
+
+    def isValidCell(self, cell):
+        return cell[0]>=0 and cell[0]<self.gridHeight and cell[1]>=0 and cell[1]<self.gridWidth
+
 
 if __name__ == '__main__':
     gridWorld = GridWorld()
     gridWorld.calculateRandomGrid()
+    print("random policy grid: ")
     print(gridWorld.grid)
+    gridWorld.calculateOptimalGrid()
+    print("optimal policy grid: ")
+    print(gridWorld.grid)
+    gridWorld.printOptimalPolicy(gridWorld.grid)
