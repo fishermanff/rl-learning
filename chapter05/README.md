@@ -1,4 +1,4 @@
-# Blackjack - 扑克牌21点游戏
+# Blackjack - 扑克牌21点
 fig5.1 left 10000 episodes
 ![fig5.1 left](https://github.com/fishermanff/rl-learning/raw/master/chapter05/output/fig5.1_left.png)
 fig5.1 right 500000 episodes
