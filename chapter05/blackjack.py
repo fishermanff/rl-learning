@@ -90,7 +90,7 @@ class Blackjack(object):
         for psum in range(12,22):
             for seenCard in [0, 2, 3, 4, 5, 6, 7, 8, 9, 10]:
                 for usableAce in ['y', 'n']:
-                    self.policy[psum, seenCard, usableAce] = ["sticks"] if psum==21 else ["sticks", "hits"]
+                    self.policy[psum, seenCard, usableAce] = ["sticks"] if psum==21 or psum==20 else ["sticks", "hits"]
                     self.valueOfState[psum, seenCard, usableAce] = 0.0
                     self.valueOfStateAction[(psum, seenCard, usableAce), "sticks"] = 0.0
                     self.valueOfStateAction[(psum, seenCard, usableAce), "hits"] = 0.0
@@ -205,7 +205,7 @@ if __name__=='__main__':
     figure5_1(blackjack.valueOfState)
 
     # fig 5.3 right
-    blackjack.monteCarloEs(episodes=3000000)
+    blackjack.monteCarloEs(episodes=2000000)
     blackjack.estimateStateValue()
     figure5_1(blackjack.valueOfState)
 
